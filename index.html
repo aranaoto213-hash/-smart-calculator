@@ -155,12 +155,12 @@
   </header>
 
   <!-- ===== HOME ===== -->
-  <div id="view-home" style="display: none;">
+  <div id="view-home">
     <div id="categoryContainer"></div>
   </div>
 
   <!-- ===== CALC VIEW ===== -->
-  <div id="view-calc" style="">
+  <div id="view-calc" style="display: none;">
     <button class="back-btn" id="backBtn">← 一覧に戻る</button>
     <h1 class="calc-title" id="calcTitle">計算機</h1>
 
@@ -212,9 +212,6 @@
 <script>
 (function(){
 
-  // ============================================================
-  // 補助関数群
-  // ============================================================
   function round1(n){ return Math.round(n*10)/10; }
   function round2(n){ return Math.round(n*100)/100; }
   function fmtDate(iso){
@@ -223,7 +220,6 @@
     return `${y}/${m}/${day}`;
   }
 
-  // 階乗・組み合わせ関数
   function fact(n){
     if(n < 0) return 0;
     if(n === 0 || n === 1) return 1;
@@ -242,9 +238,6 @@
     return perm(n, r) / fact(r);
   }
 
-  // ============================================================
-  // 計算機の定義リスト（カテゴリー別に整理）
-  // ============================================================
   const CATEGORIES = [
     {
       categoryName: '日常で使う計算',
@@ -390,7 +383,7 @@
             {id:'gross', label:'額面月給', type:'number', unit:'円', placeholder:'250000'}
           ],
           compute(v){
-            const net = v.gross * 0.8; // 概算約80%
+            const net = v.gross * 0.8;
             const deductions = v.gross - net;
             return {value:Math.round(net), display:`約 ${Math.round(net).toLocaleString()}`, detail:`控除額(税金・保険料等)目安: 約 ${Math.round(deductions).toLocaleString()} 円`};
           },
@@ -540,7 +533,6 @@
             {id:'to', label:'変換先単位', type:'select', options:[{v:'m',l:'メートル (m)'},{v:'km',l:'キロメートル (km)'},{v:'cm',l:'センチメートル (cm)'},{v:'mm',l:'ミリメートル (mm)'},{v:'inch',l:'インチ (in)'},{v:'ft',l:'フィート (ft)'}]}
           ],
           compute(v){
-            // 一旦mに換算
             const ratesInM = { m:1, km:1000, cm:0.01, mm:0.001, inch:0.0254, ft:0.3048 };
             const mVal = v.val * ratesInM[v.from];
             const result = mVal / ratesInM[v.to];
@@ -558,7 +550,7 @@
           compute(v){
             if(v.shape === 'circle'){
               const area = Math.PI * v.p1 * v.p1;
-              return {value:round2(area), display:`${round2(area)} ㎡`, detail:`円周の長さ: ${round2(2*Math.PI*v.p1)}`;
+              return {value:round2(area), display:`${round2(area)} ㎡`, detail:`円周の長さ: ${round2(2*Math.PI*v.p1)}`};
             } else {
               const area = v.p1 * (v.p2 || 0);
               return {value:round2(area), display:`${round2(area)} ㎡`};
@@ -633,12 +625,8 @@
     }
   ];
 
-  // 全計算機のフラットリスト
   const ALL_CALCULATORS = CATEGORIES.flatMap(c => c.calculators);
 
-  // ============================================================
-  // 汎用エンジン
-  // ============================================================
   const KEY_PREFIX = 'smartcalc:';
   let currentCalc = null;
   let currentHistory = [];
@@ -653,7 +641,6 @@
     catch(e){ console.error('保存に失敗しました', e); }
   }
 
-  // ---- HOME画面の構築 ----
   const categoryContainer = document.getElementById('categoryContainer');
   let globalIndex = 1;
 
@@ -685,7 +672,7 @@
   document.getElementById('backBtn').addEventListener('click', showHome);
 
   function showHome(){
-    document.getElementById('view-home').style.display = '';
+    document.getElementById('view-home').style.display = 'block';
     document.getElementById('view-calc').style.display = 'none';
   }
 
@@ -693,7 +680,7 @@
     currentCalc = ALL_CALCULATORS.find(c=>c.id===id);
     currentHistory = loadJSON(storageKey(id,'history'), []);
     document.getElementById('view-home').style.display = 'none';
-    document.getElementById('view-calc').style.display = '';
+    document.getElementById('view-calc').style.display = 'block';
     document.getElementById('calcTitle').textContent = currentCalc.name;
 
     document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
@@ -844,7 +831,6 @@
     displayResult(latest.result, prev);
   }
 
-  // ---- 履歴リスト描画 ----
   function renderHistoryList(){
     const histList = document.getElementById('histList');
     histList.innerHTML = '';
@@ -883,7 +869,6 @@
     renderHistoryList(); renderGraph(); renderPredict();
   });
 
-  // ---- グラフ描画 ----
   function renderGraph(){
     const section = document.getElementById('graphSection');
     if(!currentCalc.trend){ section.style.display='none'; return; }
@@ -928,7 +913,6 @@
     </svg>`;
   }
 
-  // ---- 予測線の算出 ----
   function linearRegression(values){
     const n=values.length, xs=values.map((_,i)=>i);
     const meanX = xs.reduce((a,b)=>a+b,0)/n, meanY = values.reduce((a,b)=>a+b,0)/n;
