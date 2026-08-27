@@ -4,7 +4,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Smart Calculator</title>
 <link rel="preconnect" href="https://fonts.googleapis.com/">
-<link href="./index_files/css2" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --paper:#faf9f5;
@@ -48,8 +48,9 @@
 
   /* ---- home grid ---- */
   .stage-label{
-    font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:var(--ink-faint);
-    margin:26px 0 10px; font-family:'JetBrains Mono', monospace;
+    font-size:13px; letter-spacing:0.08em; font-weight:700; color:var(--sage-dark);
+    margin:26px 0 10px; font-family:'Space Grotesk', sans-serif;
+    border-bottom: 2px solid var(--sage-tint); padding-bottom: 4px;
   }
   .calc-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
   .calc-card{
@@ -84,7 +85,7 @@
   .field{margin-bottom:20px;}
   .field label{display:block; font-size:12px; letter-spacing:0.06em; color:var(--ink-soft); margin-bottom:6px; text-transform:uppercase; font-weight:600;}
   .field .input-row{display:flex; align-items:baseline; gap:8px; border-bottom:2px solid var(--ink); padding-bottom:6px;}
-  .field input{flex:1; border:none; background:transparent; font-family:'JetBrains Mono', monospace; font-size:24px; font-weight:600; color:var(--ink); padding:2px 0; outline:none; min-width:0;}
+  .field input, .field select{flex:1; border:none; background:transparent; font-family:'JetBrains Mono', monospace; font-size:20px; font-weight:600; color:var(--ink); padding:2px 0; outline:none; min-width:0;}
   .field input::placeholder{color:var(--ink-faint); font-weight:400;}
   .field .unit{font-family:'JetBrains Mono', monospace; font-size:13px; color:var(--ink-faint);}
   .field .input-row:focus-within{border-color:var(--sage-dark);}
@@ -101,9 +102,9 @@
   .readout.show{display:block;}
   .readout .label{font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:4px;}
   .readout .value-row{display:flex; align-items:baseline; gap:10px; border-bottom:3px solid var(--ink); padding-bottom:8px; flex-wrap:wrap;}
-  .readout .value{font-family:'JetBrains Mono', monospace; font-size:40px; font-weight:700; letter-spacing:-0.02em;}
+  .readout .value{font-family:'JetBrains Mono', monospace; font-size:32px; font-weight:700; letter-spacing:-0.02em;}
   .readout .value-unit{font-family:'JetBrains Mono', monospace; font-size:14px; color:var(--ink-faint);}
-  .readout .detail{margin-top:8px; font-size:13px; color:var(--ink-soft);}
+  .readout .detail{margin-top:8px; font-size:13px; color:var(--ink-soft); white-space: pre-line;}
   .badge{display:inline-block; margin-top:10px; font-size:12px; font-weight:600; padding:4px 10px; border-radius:20px; font-family:'JetBrains Mono', monospace;}
   .badge.low{background:#e5eef7; color:#2f5f80;}
   .badge.normal{background:var(--sage-tint); color:var(--sage-dark);}
@@ -155,14 +156,13 @@
 
   <!-- ===== HOME ===== -->
   <div id="view-home" style="display: none;">
-    <div class="stage-label">第1段階</div>
-    <div class="calc-grid" id="calcGrid"></div>
+    <div id="categoryContainer"></div>
   </div>
 
   <!-- ===== CALC VIEW ===== -->
   <div id="view-calc" style="">
     <button class="back-btn" id="backBtn">← 一覧に戻る</button>
-    <h1 class="calc-title" id="calcTitle">BMI計算機</h1>
+    <h1 class="calc-title" id="calcTitle">計算機</h1>
 
     <nav class="tabs">
       <button class="tab-btn active" data-tab="calc">計算する</button>
@@ -213,7 +213,7 @@
 (function(){
 
   // ============================================================
-  // 計算機の定義（ここに追加していけば計算機が増える）
+  // 補助関数群
   // ============================================================
   function round1(n){ return Math.round(n*10)/10; }
   function round2(n){ return Math.round(n*100)/100; }
@@ -222,117 +222,419 @@
     const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
     return `${y}/${m}/${day}`;
   }
-  function fmtDateJP(d){
-    const y=d.getFullYear(), m=d.getMonth()+1, day=d.getDate();
-    return `${y}年${m}月${day}日`;
-  }
-  const WEEKDAY = ['日','月','火','水','木','金','土'];
 
-  const CALCULATORS = [
+  // 階乗・組み合わせ関数
+  function fact(n){
+    if(n < 0) return 0;
+    if(n === 0 || n === 1) return 1;
+    let res = 1;
+    for(let i=2; i<=n; i++) res *= i;
+    return res;
+  }
+  function perm(n, r){
+    if(n < r || n < 0 || r < 0) return 0;
+    let res = 1;
+    for(let i=0; i<r; i++) res *= (n - i);
+    return res;
+  }
+  function comb(n, r){
+    if(n < r || n < 0 || r < 0) return 0;
+    return perm(n, r) / fact(r);
+  }
+
+  // ============================================================
+  // 計算機の定義リスト（カテゴリー別に整理）
+  // ============================================================
+  const CATEGORIES = [
     {
-      id:'bmi', name:'BMI計算機', desc:'身長と体重から肥満度を判定', unit:'kg/m²', trend:true,
-      fields:[
-        {id:'height', label:'身長', type:'number', unit:'cm', placeholder:'170', min:50, max:250},
-        {id:'weight', label:'体重', type:'number', unit:'kg', placeholder:'60', min:10, max:300}
-      ],
-      compute(v){
-        const bmi = v.weight / Math.pow(v.height/100, 2);
-        const r = round1(bmi);
-        let cat;
-        if(bmi<18.5) cat={label:'低体重', cls:'low'};
-        else if(bmi<25) cat={label:'普通体重', cls:'normal'};
-        else if(bmi<30) cat={label:'肥満（1度）', cls:'over'};
-        else cat={label:'肥満（2度以上）', cls:'obese'};
-        return {value:r, display:r.toFixed(1), category:cat};
-      },
-      inputSummary(v){ return `身長 ${v.height}cm ・ 体重 ${v.weight}kg`; }
+      categoryName: '日常で使う計算',
+      calculators: [
+        {
+          id:'ratio', name:'割合計算機', desc:'ある数が全体の何%かを計算', unit:'%', trend:true,
+          fields:[
+            {id:'part', label:'一部の値', type:'number', placeholder:'150'},
+            {id:'whole', label:'全体の値', type:'number', placeholder:'500'}
+          ],
+          compute(v){
+            const pct = (v.part / v.whole) * 100;
+            return {value:round2(pct), display:round2(pct).toFixed(2)};
+          },
+          inputSummary(v){ return `${v.part} / ${v.whole}`; }
+        },
+        {
+          id:'percent', name:'パーセント計算機', desc:'ある数の○%の値を計算', unit:'', trend:true,
+          fields:[
+            {id:'base', label:'元の数', type:'number', placeholder:'500'},
+            {id:'percent', label:'パーセント', type:'number', unit:'%', placeholder:'20'}
+          ],
+          compute(v){
+            const result = v.base * v.percent / 100;
+            return {value:round2(result), display:round2(result).toLocaleString()};
+          },
+          inputSummary(v){ return `${v.base} の ${v.percent}%`; }
+        },
+        {
+          id:'basic_arithmetic', name:'四則演算', desc:'2つの数値の加減乗除を計算', unit:'', trend:false,
+          fields:[
+            {id:'num1', label:'数値1', type:'number', placeholder:'10'},
+            {id:'op', label:'演算子', type:'select', options:[{v:'+',l:'＋ (足し算)'},{v:'-',l:'－ (引き算)'},{v:'*',l:'× (掛け算)'},{v:'/',l:'÷ (割り算)'}]},
+            {id:'num2', label:'数値2', type:'number', placeholder:'5'}
+          ],
+          compute(v){
+            let res = 0;
+            if(v.op === '+') res = v.num1 + v.num2;
+            else if(v.op === '-') res = v.num1 - v.num2;
+            else if(v.op === '*') res = v.num1 * v.num2;
+            else if(v.op === '/') {
+              if(v.num2 === 0) return {error:'0で割ることはできません'};
+              res = v.num1 / v.num2;
+            }
+            return {value:round2(res), display:round2(res).toLocaleString()};
+          },
+          inputSummary(v){ return `${v.num1} ${v.op} ${v.num2}`; }
+        },
+        {
+          id:'bmi', name:'BMI計算機', desc:'身長と体重から肥満度を判定', unit:'kg/m²', trend:true,
+          fields:[
+            {id:'height', label:'身長', type:'number', unit:'cm', placeholder:'170', min:50, max:250},
+            {id:'weight', label:'体重', type:'number', unit:'kg', placeholder:'60', min:10, max:300}
+          ],
+          compute(v){
+            const bmi = v.weight / Math.pow(v.height/100, 2);
+            const r = round1(bmi);
+            let cat;
+            if(bmi<18.5) cat={label:'低体重', cls:'low'};
+            else if(bmi<25) cat={label:'普通体重', cls:'normal'};
+            else if(bmi<30) cat={label:'肥満（1度）', cls:'over'};
+            else cat={label:'肥満（2度以上）', cls:'obese'};
+            return {value:r, display:r.toFixed(1), category:cat};
+          },
+          inputSummary(v){ return `身長 ${v.height}cm ・ 体重 ${v.weight}kg`; }
+        }
+      ]
     },
     {
-      id:'age', name:'年齢計算機', desc:'生年月日から現在の年齢を計算', unit:'', trend:false,
-      fields:[ {id:'birth', label:'生年月日', type:'date'} ],
-      compute(v){
-        const birth = new Date(v.birth+'T00:00:00');
-        const now = new Date();
-        let years = now.getFullYear()-birth.getFullYear();
-        let months = now.getMonth()-birth.getMonth();
-        let days = now.getDate()-birth.getDate();
-        if(days<0){ months-=1; const prevMonthLast = new Date(now.getFullYear(), now.getMonth(), 0); days += prevMonthLast.getDate(); }
-        if(months<0){ years-=1; months+=12; }
-        const totalDays = Math.floor((now-birth)/86400000);
-        return {value:years, display:`${years}歳${months}ヶ月${days}日`, detail:`生まれてから ${totalDays.toLocaleString()} 日`};
-      },
-      inputSummary(v){ return `生年月日 ${v.birth}`; }
+      categoryName: 'お金の計算',
+      calculators: [
+        {
+          id:'discount', name:'割引計算', desc:'元の価格から割引後の金額を計算', unit:'円', trend:false,
+          fields:[
+            {id:'price', label:'元の価格', type:'number', unit:'円', placeholder:'1000'},
+            {id:'discount', label:'割引率', type:'number', unit:'%', placeholder:'20'}
+          ],
+          compute(v){
+            const saved = v.price * (v.discount / 100);
+            const finalPrice = v.price - saved;
+            return {value:Math.round(finalPrice), display:Math.round(finalPrice).toLocaleString(), detail:`お得になった金額: ${Math.round(saved).toLocaleString()} 円`};
+          },
+          inputSummary(v){ return `${v.price}円の${v.discount}%引き`; }
+        },
+        {
+          id:'tax', name:'消費税計算', desc:'税抜き価格から税込価格（8%/10%）を計算', unit:'円', trend:false,
+          fields:[
+            {id:'price', label:'税抜き価格', type:'number', unit:'円', placeholder:'1000'},
+            {id:'rate', label:'税率', type:'select', options:[{v:'10',l:'10% (標準税率)'},{v:'8',l:'8% (軽減税率)'}]}
+          ],
+          compute(v){
+            const r = parseFloat(v.rate) / 100;
+            const tax = v.price * r;
+            const total = v.price + tax;
+            return {value:Math.round(total), display:Math.round(total).toLocaleString(), detail:`消費税額: ${Math.round(tax).toLocaleString()} 円`};
+          },
+          inputSummary(v){ return `${v.price}円 (税率${v.rate}%)`; }
+        },
+        {
+          id:'compound', name:'複利計算', desc:'元本・利率・期間から将来の運用資産を計算', unit:'円', trend:true,
+          fields:[
+            {id:'principal', label:'元本', type:'number', unit:'円', placeholder:'1000000'},
+            {id:'rate', label:'年利率', type:'number', unit:'%', placeholder:'3'},
+            {id:'years', label:'運用期間', type:'number', unit:'年', placeholder:'10'}
+          ],
+          compute(v){
+            const total = v.principal * Math.pow(1 + (v.rate/100), v.years);
+            const profit = total - v.principal;
+            return {value:Math.round(total), display:Math.round(total).toLocaleString(), detail:`増えた利息分: ${Math.round(profit).toLocaleString()} 円`};
+          },
+          inputSummary(v){ return `元本${v.principal}円/年利${v.rate}%/${v.years}年`; }
+        },
+        {
+          id:'margin', name:'利益率計算', desc:'原価と売価から利益額と利益率を計算', unit:'%', trend:true,
+          fields:[
+            {id:'cost', label:'原価', type:'number', unit:'円', placeholder:'800'},
+            {id:'price', label:'売価 (販売価格)', type:'number', unit:'円', placeholder:'1000'}
+          ],
+          compute(v){
+            const profit = v.price - v.cost;
+            const margin = (profit / v.price) * 100;
+            return {value:round2(margin), display:`${round2(margin)} %`, detail:`利益額: ${profit.toLocaleString()} 円`};
+          },
+          inputSummary(v){ return `原価${v.cost}円 / 売価${v.price}円`; }
+        },
+        {
+          id:'hourly', name:'時給計算', desc:'時給と労働時間から日給・月給目安を計算', unit:'円', trend:true,
+          fields:[
+            {id:'wage', label:'時給', type:'number', unit:'円', placeholder:'1100'},
+            {id:'hours', label:'1日の労働時間', type:'number', unit:'時間', placeholder:'8'},
+            {id:'days', label:'月間勤務日数', type:'number', unit:'日', placeholder:'20'}
+          ],
+          compute(v){
+            const daily = v.wage * v.hours;
+            const monthly = daily * v.days;
+            return {value:monthly, display:`月給目安: ${monthly.toLocaleString()}`, detail:`日給目安: ${daily.toLocaleString()} 円`};
+          },
+          inputSummary(v){ return `時給${v.wage}円 / ${v.hours}h / 月${v.days}日`; }
+        },
+        {
+          id:'salary', name:'給与手取り概算', desc:'額面給与からおおよその手取り額(約80%)を計算', unit:'円', trend:true,
+          fields:[
+            {id:'gross', label:'額面月給', type:'number', unit:'円', placeholder:'250000'}
+          ],
+          compute(v){
+            const net = v.gross * 0.8; // 概算約80%
+            const deductions = v.gross - net;
+            return {value:Math.round(net), display:`約 ${Math.round(net).toLocaleString()}`, detail:`控除額(税金・保険料等)目安: 約 ${Math.round(deductions).toLocaleString()} 円`};
+          },
+          inputSummary(v){ return `額面 ${v.gross}円`; }
+        }
+      ]
     },
     {
-      id:'dateshift', name:'日付計算機', desc:'基準日から○日後／前の日付を計算', unit:'', trend:false,
-      fields:[
-        {id:'base', label:'基準日', type:'date'},
-        {id:'offset', label:'日数（前は−）', type:'number', unit:'日', placeholder:'30', min:-3650, max:3650}
-      ],
-      compute(v){
-        const base = new Date(v.base+'T00:00:00');
-        const result = new Date(base.getTime() + v.offset*86400000);
-        return {value:null, display:`${fmtDateJP(result)}（${WEEKDAY[result.getDay()]}）`};
-      },
-      inputSummary(v){ return `${v.base} の ${v.offset>=0?'+':''}${v.offset}日`; }
+      categoryName: '数学・データ分析の基礎',
+      calculators: [
+        {
+          id:'mean', name:'平均値計算', desc:'カンマ区切りの数値群から平均値を計算', unit:'', trend:false,
+          fields:[
+            {id:'list', label:'数値リスト（カンマ区切り）', type:'text', placeholder:'10, 20, 30, 40, 50'}
+          ],
+          compute(v){
+            const nums = v.list.split(',').map(n=>parseFloat(n.trim())).filter(n=>!isNaN(n));
+            if(nums.length === 0) return {error:'有効な数値を入力してください'};
+            const sum = nums.reduce((a,b)=>a+b,0);
+            const avg = sum / nums.length;
+            return {value:round2(avg), display:round2(avg).toLocaleString(), detail:`データ件数: ${nums.length} 件 / 合計: ${sum}`};
+          },
+          inputSummary(v){ return `${v.list}`; }
+        },
+        {
+          id:'median', name:'中央値計算', desc:'数値群の中央値（メディアン）を算出', unit:'', trend:false,
+          fields:[
+            {id:'list', label:'数値リスト（カンマ区切り）', type:'text', placeholder:'10, 50, 20, 40, 30'}
+          ],
+          compute(v){
+            const nums = v.list.split(',').map(n=>parseFloat(n.trim())).filter(n=>!isNaN(n)).sort((a,b)=>a-b);
+            if(nums.length === 0) return {error:'有効な数値を入力してください'};
+            let med;
+            const mid = Math.floor(nums.length / 2);
+            if(nums.length % 2 === 0){
+              med = (nums[mid - 1] + nums[mid]) / 2;
+            } else {
+              med = nums[mid];
+            }
+            return {value:round2(med), display:round2(med).toLocaleString(), detail:`ソート順: ${nums.join(', ')}`};
+          },
+          inputSummary(v){ return `${v.list}`; }
+        },
+        {
+          id:'sd', name:'標準偏差計算', desc:'数値群の分散および標準偏差を算出', unit:'', trend:false,
+          fields:[
+            {id:'list', label:'数値リスト（カンマ区切り）', type:'text', placeholder:'60, 70, 80, 90, 100'}
+          ],
+          compute(v){
+            const nums = v.list.split(',').map(n=>parseFloat(n.trim())).filter(n=>!isNaN(n));
+            if(nums.length < 2) return {error:'2つ以上の数値を入力してください'};
+            const avg = nums.reduce((a,b)=>a+b,0) / nums.length;
+            const variance = nums.reduce((a,b)=>a+Math.pow(b-avg,2),0) / nums.length;
+            const sd = Math.sqrt(variance);
+            return {value:round2(sd), display:round2(sd).toLocaleString(), detail:`分散: ${round2(variance)} / 平均: ${round2(avg)}`};
+          },
+          inputSummary(v){ return `${v.list}`; }
+        },
+        {
+          id:'probability', name:'確率計算', desc:'指定した試行における確率を計算', unit:'%', trend:false,
+          fields:[
+            {id:'target', label:'対象の起こる通り数', type:'number', placeholder:'1'},
+            {id:'total', label:'すべての起こり得る通り数', type:'number', placeholder:'6'}
+          ],
+          compute(v){
+            if(v.total <= 0) return {error:'全通り数は1以上を指定してください'};
+            const prob = (v.target / v.total) * 100;
+            return {value:round2(prob), display:`${round2(prob)} %`, detail:`分数表現: ${v.target} / ${v.total}`};
+          },
+          inputSummary(v){ return `${v.target} / ${v.total}`; }
+        },
+        {
+          id:'comb', name:'順列・組み合わせ', desc:'nPr (順列) と nCr (組み合わせ) を計算', unit:'', trend:false,
+          fields:[
+            {id:'n', label:'全体数 (n)', type:'number', placeholder:'5'},
+            {id:'r', label:'選ぶ数 (r)', type:'number', placeholder:'2'}
+          ],
+          compute(v){
+            if(v.n < v.r) return {error:'nはr以上の値を入力してください'};
+            const pVal = perm(v.n, v.r);
+            const cVal = comb(v.n, v.r);
+            return {value:cVal, display:`組み合わせ (nCr): ${cVal.toLocaleString()}`, detail:`順列 (nPr): ${pVal.toLocaleString()} 通り`};
+          },
+          inputSummary(v){ return `n=${v.n}, r=${v.r}`; }
+        },
+        {
+          id:'factor', name:'素因数分解', desc:'整数を素数の積に分解', unit:'', trend:false,
+          fields:[
+            {id:'num', label:'分解する整数', type:'number', placeholder:'360', min:2}
+          ],
+          compute(v){
+            let n = Math.floor(v.num);
+            if(n < 2) return {error:'2以上の整数を入力してください'};
+            const factors = [];
+            let d = 2;
+            while(n >= 2){
+              if(n % d === 0){
+                factors.push(d);
+                n /= d;
+              } else {
+                d++;
+                if(d * d > n){
+                  if(n > 1) factors.push(n);
+                  break;
+                }
+              }
+            }
+            return {value:null, display:factors.join(' × '), detail:`素因数の数: ${factors.length} 個`};
+          },
+          inputSummary(v){ return `${v.num}`; }
+        },
+        {
+          id:'quadratic', name:'二次方程式の解', desc:'ax² + bx + c = 0 の解を解の公式で算出', unit:'', trend:false,
+          fields:[
+            {id:'a', label:'係数 a', type:'number', placeholder:'1'},
+            {id:'b', label:'係数 b', type:'number', placeholder:'-5'},
+            {id:'c', label:'定数 c', type:'number', placeholder:'6'}
+          ],
+          compute(v){
+            if(v.a === 0) return {error:'aは0以外を入力してください'};
+            const D = v.b*v.b - 4*v.a*v.c;
+            if(D > 0){
+              const x1 = (-v.b + Math.sqrt(D)) / (2*v.a);
+              const x2 = (-v.b - Math.sqrt(D)) / (2*v.a);
+              return {value:null, display:`x = ${round2(x1)},  ${round2(x2)}`, detail:`判別式 D = ${D} (>0 : 異なる2つの実数解)`};
+            } else if(D === 0){
+              const x = -v.b / (2*v.a);
+              return {value:null, display:`x = ${round2(x)} (重解)`, detail:`判別式 D = 0`};
+            } else {
+              const real = round2(-v.b / (2*v.a));
+              const imag = round2(Math.sqrt(-D) / (2*v.a));
+              return {value:null, display:`x = ${real} ± ${imag}i`, detail:`判別式 D = ${D} (<0 : 虚数解)`};
+            }
+          },
+          inputSummary(v){ return `${v.a}x² + ${v.b}x + ${v.c} = 0`; }
+        }
+      ]
     },
     {
-      id:'datediff', name:'日数計算機', desc:'2つの日付の間の日数を計算', unit:'日', trend:true,
-      fields:[
-        {id:'start', label:'開始日', type:'date'},
-        {id:'end', label:'終了日', type:'date'}
-      ],
-      compute(v){
-        const s = new Date(v.start+'T00:00:00'), e = new Date(v.end+'T00:00:00');
-        const diff = Math.round((e-s)/86400000);
-        const weeks = Math.floor(Math.abs(diff)/7);
-        return {value:diff, display:`${diff}`, detail:`約 ${weeks} 週間`};
-      },
-      inputSummary(v){ return `${v.start} 〜 ${v.end}`; }
-    },
-    {
-      id:'timediff', name:'時間計算機', desc:'開始〜終了時刻の経過時間を計算', unit:'', trend:true,
-      fields:[
-        {id:'start', label:'開始時刻', type:'time'},
-        {id:'end', label:'終了時刻', type:'time'}
-      ],
-      compute(v){
-        const [sh,sm] = v.start.split(':').map(Number);
-        const [eh,em] = v.end.split(':').map(Number);
-        let diff = (eh*60+em) - (sh*60+sm);
-        if(diff<0) diff += 1440;
-        const h = Math.floor(diff/60), m = diff%60;
-        return {value:round2(diff/60), display:`${h}時間${m}分`, detail:`(${round2(diff/60)} 時間)`};
-      },
-      inputSummary(v){ return `${v.start} 〜 ${v.end}`; }
-    },
-    {
-      id:'ratio', name:'割合計算機', desc:'ある数が全体の何%かを計算', unit:'%', trend:true,
-      fields:[
-        {id:'part', label:'一部の値', type:'number', placeholder:'150'},
-        {id:'whole', label:'全体の値', type:'number', placeholder:'500'}
-      ],
-      compute(v){
-        const pct = v.part / v.whole * 100;
-        const r = round1(pct);
-        return {value:r, display:r.toFixed(1)};
-      },
-      inputSummary(v){ return `${v.part} / ${v.whole}`; }
-    },
-    {
-      id:'percent', name:'パーセント計算機', desc:'ある数の○%の値を計算', unit:'', trend:true,
-      fields:[
-        {id:'base', label:'元の数', type:'number', placeholder:'500'},
-        {id:'percent', label:'パーセント', type:'number', unit:'%', placeholder:'20'}
-      ],
-      compute(v){
-        const result = v.base * v.percent / 100;
-        const r = round2(result);
-        return {value:r, display:r.toLocaleString()};
-      },
-      inputSummary(v){ return `${v.base} の ${v.percent}%`; }
+      categoryName: '単位と測定',
+      calculators: [
+        {
+          id:'unit_conv', name:'単位変換 (長さ)', desc:'m, km, cm, mm, inch, feet の相互変換', unit:'', trend:false,
+          fields:[
+            {id:'val', label:'変換元の値', type:'number', placeholder:'1'},
+            {id:'from', label:'変換元単位', type:'select', options:[{v:'m',l:'メートル (m)'},{v:'km',l:'キロメートル (km)'},{v:'cm',l:'センチメートル (cm)'},{v:'mm',l:'ミリメートル (mm)'},{v:'inch',l:'インチ (in)'},{v:'ft',l:'フィート (ft)'}]},
+            {id:'to', label:'変換先単位', type:'select', options:[{v:'m',l:'メートル (m)'},{v:'km',l:'キロメートル (km)'},{v:'cm',l:'センチメートル (cm)'},{v:'mm',l:'ミリメートル (mm)'},{v:'inch',l:'インチ (in)'},{v:'ft',l:'フィート (ft)'}]}
+          ],
+          compute(v){
+            // 一旦mに換算
+            const ratesInM = { m:1, km:1000, cm:0.01, mm:0.001, inch:0.0254, ft:0.3048 };
+            const mVal = v.val * ratesInM[v.from];
+            const result = mVal / ratesInM[v.to];
+            return {value:round2(result), display:`${round2(result)} ${v.to}`};
+          },
+          inputSummary(v){ return `${v.val}${v.from} → ${v.to}`; }
+        },
+        {
+          id:'area', name:'面積計算 (長方形/円)', desc:'図形の寸法から面積を計算', unit:'㎡', trend:false,
+          fields:[
+            {id:'shape', label:'図形', type:'select', options:[{v:'rect',l:'長方形・正方形'},{v:'circle',l:'円'}]},
+            {id:'p1', label:'縦の長さ / 半径', type:'number', placeholder:'10'},
+            {id:'p2', label:'横の長さ (円の場合は不要)', type:'number', placeholder:'5'}
+          ],
+          compute(v){
+            if(v.shape === 'circle'){
+              const area = Math.PI * v.p1 * v.p1;
+              return {value:round2(area), display:`${round2(area)} ㎡`, detail:`円周の長さ: ${round2(2*Math.PI*v.p1)}`;
+            } else {
+              const area = v.p1 * (v.p2 || 0);
+              return {value:round2(area), display:`${round2(area)} ㎡`};
+            }
+          },
+          inputSummary(v){ return v.shape==='circle'?`半径:${v.p1}`:`縦:${v.p1}, 横:${v.p2}`; }
+        },
+        {
+          id:'volume', name:'体積計算 (直方体/球/円柱)', desc:'立体図形の寸法から体積を計算', unit:'㎥', trend:false,
+          fields:[
+            {id:'shape', label:'立体形状', type:'select', options:[{v:'box',l:'直方体'},{v:'cylinder',l:'円柱'},{v:'sphere',l:'球'}]},
+            {id:'v1', label:'縦 / 半径(円柱・球)', type:'number', placeholder:'5'},
+            {id:'v2', label:'横 / 高さ(円柱)', type:'number', placeholder:'4'},
+            {id:'v3', label:'高さ(直方体のみ)', type:'number', placeholder:'3'}
+          ],
+          compute(v){
+            let vol = 0;
+            if(v.shape==='box') vol = v.v1 * (v.v2||0) * (v.v3||0);
+            else if(v.shape==='cylinder') vol = Math.PI * Math.pow(v.v1,2) * (v.v2||0);
+            else if(v.shape==='sphere') vol = (4/3) * Math.PI * Math.pow(v.v1,3);
+            return {value:round2(vol), display:`${round2(vol)} ㎥`};
+          },
+          inputSummary(v){ return `${v.shape} (${v.v1}, ${v.v2}, ${v.v3})`; }
+        },
+        {
+          id:'weight', name:'重さ・質量変換', desc:'g, kg, t, lb(ポンド), oz(オンス) の変換', unit:'', trend:false,
+          fields:[
+            {id:'val', label:'値', type:'number', placeholder:'1000'},
+            {id:'from', label:'変換元', type:'select', options:[{v:'g',l:'グラム (g)'},{v:'kg',l:'キログラム (kg)'},{v:'t',l:'トン (t)'},{v:'lb',l:'ポンド (lb)'},{v:'oz',l:'オンス (oz)'}]},
+            {id:'to', label:'変換先', type:'select', options:[{v:'kg',l:'キログラム (kg)'},{v:'g',l:'グラム (g)'},{v:'t',l:'トン (t)'},{v:'lb',l:'ポンド (lb)'},{v:'oz',l:'オンス (oz)'}]}
+          ],
+          compute(v){
+            const ratesInG = { g:1, kg:1000, t:1000000, lb:453.592, oz:28.3495 };
+            const gVal = v.val * ratesInG[v.from];
+            const res = gVal / ratesInG[v.to];
+            return {value:round2(res), display:`${round2(res)} ${v.to}`};
+          },
+          inputSummary(v){ return `${v.val}${v.from} → ${v.to}`; }
+        },
+        {
+          id:'temp', name:'温度変換 (℃ / ℉)', desc:'摂氏(℃)と華氏(℉)を相互変換', unit:'', trend:false,
+          fields:[
+            {id:'val', label:'温度', type:'number', placeholder:'25'},
+            {id:'mode', label:'変換方向', type:'select', options:[{v:'c2f',l:'摂氏(℃) → 華氏(℉)'},{v:'f2c',l:'華氏(℉) → 摂氏(℃)'}]}
+          ],
+          compute(v){
+            if(v.mode==='c2f'){
+              const f = (v.val * 9/5) + 32;
+              return {value:round1(f), display:`${round1(f)} ℉`};
+            } else {
+              const c = (v.val - 32) * 5/9;
+              return {value:round1(c), display:`${round1(c)} ℃`};
+            }
+          },
+          inputSummary(v){ return `${v.val} (${v.mode==='c2f'?'℃→℉':'℉→℃'})`; }
+        },
+        {
+          id:'speed', name:'速度計算・変換', desc:'距離と時間から速度（時速/分速/秒速）を計算', unit:'km/h', trend:false,
+          fields:[
+            {id:'dist', label:'距離', type:'number', unit:'km', placeholder:'100'},
+            {id:'time', label:'時間', type:'number', unit:'時間', placeholder:'2'}
+          ],
+          compute(v){
+            if(v.time <= 0) return {error:'時間は0より大きい値を入力してください'};
+            const kmh = v.dist / v.time;
+            const ms = (kmh * 1000) / 3600;
+            return {value:round1(kmh), display:`時速 ${round1(kmh)} km/h`, detail:`秒速: 約 ${round1(ms)} m/s`};
+          },
+          inputSummary(v){ return `${v.dist}km / ${v.time}時間`; }
+        }
+      ]
     }
   ];
+
+  // 全計算機のフラットリスト
+  const ALL_CALCULATORS = CATEGORIES.flatMap(c => c.calculators);
 
   // ============================================================
   // 汎用エンジン
@@ -351,14 +653,32 @@
     catch(e){ console.error('保存に失敗しました', e); }
   }
 
-  // ---- home grid ----
-  const calcGrid = document.getElementById('calcGrid');
-  CALCULATORS.forEach((c,i)=>{
-    const card = document.createElement('div');
-    card.className = 'calc-card';
-    card.innerHTML = `<div class="cc-num">0${i+1}</div><div class="cc-name">${c.name}</div><div class="cc-desc">${c.desc}</div>`;
-    card.addEventListener('click', ()=> openCalculator(c.id));
-    calcGrid.appendChild(card);
+  // ---- HOME画面の構築 ----
+  const categoryContainer = document.getElementById('categoryContainer');
+  let globalIndex = 1;
+
+  CATEGORIES.forEach(cat => {
+    const groupDiv = document.createElement('div');
+    
+    const label = document.createElement('div');
+    label.className = 'stage-label';
+    label.textContent = cat.categoryName;
+    groupDiv.appendChild(label);
+
+    const grid = document.createElement('div');
+    grid.className = 'calc-grid';
+
+    cat.calculators.forEach(c => {
+      const card = document.createElement('div');
+      card.className = 'calc-card';
+      const numStr = String(globalIndex++).padStart(2, '0');
+      card.innerHTML = `<div class="cc-num">${numStr}</div><div class="cc-name">${c.name}</div><div class="cc-desc">${c.desc}</div>`;
+      card.addEventListener('click', ()=> openCalculator(c.id));
+      grid.appendChild(card);
+    });
+
+    groupDiv.appendChild(grid);
+    categoryContainer.appendChild(groupDiv);
   });
 
   document.getElementById('homeBtn').addEventListener('click', showHome);
@@ -370,7 +690,7 @@
   }
 
   function openCalculator(id){
-    currentCalc = CALCULATORS.find(c=>c.id===id);
+    currentCalc = ALL_CALCULATORS.find(c=>c.id===id);
     currentHistory = loadJSON(storageKey(id,'history'), []);
     document.getElementById('view-home').style.display = 'none';
     document.getElementById('view-calc').style.display = '';
@@ -409,14 +729,24 @@
       const div = document.createElement('div');
       div.className = 'field';
       const unitHtml = f.unit ? `<span class="unit">${f.unit}</span>` : '';
-      const inputType = f.type;
-      const step = f.type==='number' ? ' step="0.1"' : '';
-      div.innerHTML = `
-        <label for="f-${f.id}">${f.label}</label>
-        <div class="input-row">
-          <input type="${inputType}" id="f-${f.id}" ${inputType==='number'?`inputmode="decimal" placeholder="${f.placeholder||''}"`:''}${step}>
-          ${unitHtml}
-        </div>`;
+      
+      if(f.type === 'select'){
+        const opts = f.options.map(o=>`<option value="${o.v}">${o.l}</option>`).join('');
+        div.innerHTML = `
+          <label for="f-${f.id}">${f.label}</label>
+          <div class="input-row">
+            <select id="f-${f.id}">${opts}</select>
+          </div>`;
+      } else {
+        const inputType = f.type;
+        const step = f.type==='number' ? ' step="any"' : '';
+        div.innerHTML = `
+          <label for="f-${f.id}">${f.label}</label>
+          <div class="input-row">
+            <input type="${inputType}" id="f-${f.id}" ${inputType==='number'?`inputmode="decimal" placeholder="${f.placeholder||''}"`:''}${step}>
+            ${unitHtml}
+          </div>`;
+      }
       container.appendChild(div);
       if(last[f.id] !== undefined){
         document.getElementById('f-'+f.id).value = last[f.id];
@@ -436,7 +766,7 @@
         if(f.max!==undefined && num>f.max) return {error:`「${f.label}」は${f.max}以下で入力してください。`};
         values[f.id] = num;
       } else {
-        if(!raw) return {error:`「${f.label}」を入力してください。`};
+        if(!raw && f.type!=='select') return {error:`「${f.label}」を入力してください。`};
         values[f.id] = raw;
       }
     }
@@ -449,8 +779,15 @@
     const {values, error} = readFieldValues();
     if(error){ errEl.textContent = error; errEl.style.display='block'; document.getElementById('readout').classList.remove('show'); return; }
 
-    const prevEntry = currentHistory.length ? currentHistory[currentHistory.length-1] : null;
     const result = currentCalc.compute(values);
+    if(result.error){
+      errEl.textContent = result.error;
+      errEl.style.display='block';
+      document.getElementById('readout').classList.remove('show');
+      return;
+    }
+
+    const prevEntry = currentHistory.length ? currentHistory[currentHistory.length-1] : null;
     displayResult(result, prevEntry);
 
     saveJSON(storageKey(currentCalc.id,'last'), values);
@@ -507,7 +844,7 @@
     displayResult(latest.result, prev);
   }
 
-  // ---- history list ----
+  // ---- 履歴リスト描画 ----
   function renderHistoryList(){
     const histList = document.getElementById('histList');
     histList.innerHTML = '';
@@ -546,7 +883,7 @@
     renderHistoryList(); renderGraph(); renderPredict();
   });
 
-  // ---- graph ----
+  // ---- グラフ描画 ----
   function renderGraph(){
     const section = document.getElementById('graphSection');
     if(!currentCalc.trend){ section.style.display='none'; return; }
@@ -560,7 +897,8 @@
     const sorted = [...usable].sort((a,b)=> new Date(a.date)-new Date(b.date));
     const values = sorted.map(e=>e.result.value);
     const W=560,H=200,padL=34,padR=16,padT=16,padB=26;
-    const minV = Math.min(...values)-1, maxV = Math.max(...values)+1;
+    let minV = Math.min(...values), maxV = Math.max(...values);
+    if(minV === maxV) { minV -= 1; maxV += 1; }
     const n = values.length;
     const x = i => n===1 ? padL+(W-padL-padR)/2 : padL+(i/(n-1))*(W-padL-padR);
     const y = v => padT + (1-(v-minV)/(maxV-minV))*(H-padT-padB);
@@ -590,7 +928,7 @@
     </svg>`;
   }
 
-  // ---- prediction ----
+  // ---- 予測線の算出 ----
   function linearRegression(values){
     const n=values.length, xs=values.map((_,i)=>i);
     const meanX = xs.reduce((a,b)=>a+b,0)/n, meanY = values.reduce((a,b)=>a+b,0)/n;
@@ -627,6 +965,5 @@
   showHome();
 })();
 </script>
-
 
 </body></html>
