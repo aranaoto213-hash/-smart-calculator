@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!-- saved from url=(0045)file:///C:/Users/naoto/Downloads/index_2.html -->
 <html lang="ja"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -157,7 +156,7 @@
   <!-- ===== HOME ===== -->
   <div id="view-home" style="display: none;">
     <div class="stage-label">第1段階</div>
-    <div class="calc-grid" id="calcGrid"><div class="calc-card"><div class="cc-num">01</div><div class="cc-name">BMI計算機</div><div class="cc-desc">身長と体重から肥満度を判定</div></div><div class="calc-card"><div class="cc-num">02</div><div class="cc-name">年齢計算機</div><div class="cc-desc">生年月日から現在の年齢を計算</div></div><div class="calc-card"><div class="cc-num">03</div><div class="cc-name">日付計算機</div><div class="cc-desc">基準日から○日後／前の日付を計算</div></div><div class="calc-card"><div class="cc-num">04</div><div class="cc-name">日数計算機</div><div class="cc-desc">2つの日付の間の日数を計算</div></div><div class="calc-card"><div class="cc-num">05</div><div class="cc-name">時間計算機</div><div class="cc-desc">開始〜終了時刻の経過時間を計算</div></div><div class="calc-card"><div class="cc-num">06</div><div class="cc-name">割合計算機</div><div class="cc-desc">ある数が全体の何%かを計算</div></div><div class="calc-card"><div class="cc-num">07</div><div class="cc-name">パーセント計算機</div><div class="cc-desc">ある数の○%の値を計算</div></div></div>
+    <div class="calc-grid" id="calcGrid"></div>
   </div>
 
   <!-- ===== CALC VIEW ===== -->
@@ -171,17 +170,7 @@
     </nav>
 
     <section class="panel active" id="panel-calc">
-      <div id="fieldsContainer"><div class="field">
-        <label for="f-height">身長</label>
-        <div class="input-row">
-          <input type="number" id="f-height" inputmode="decimal" placeholder="170" step="0.1">
-          <span class="unit">cm</span>
-        </div></div><div class="field">
-        <label for="f-weight">体重</label>
-        <div class="input-row">
-          <input type="number" id="f-weight" inputmode="decimal" placeholder="60" step="0.1">
-          <span class="unit">kg</span>
-        </div></div></div>
+      <div id="fieldsContainer"></div>
       <button class="btn btn-primary" id="calcBtn">計算する</button>
       <div class="error" id="errorMsg" style="display: none;"></div>
 
@@ -346,7 +335,7 @@
   ];
 
   // ============================================================
-  // 汎用エンジン（この下は基本触らなくてOK）
+  // 汎用エンジン
   // ============================================================
   const KEY_PREFIX = 'smartcalc:';
   let currentCalc = null;
