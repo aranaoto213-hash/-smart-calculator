@@ -2,10 +2,30 @@
 <html lang="ja"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Smart Calculator</title>
+<title id="docTitle">Smart Calculator — 無料の多機能Web計算機</title>
+<meta id="docDesc" name="description" content="BMI、割合、消費税、複利、標準偏差などを簡単に計算・自動記録・グラフ化・未来予測できるブラウザ完結型計算ツールです。">
+
+<!-- OGP タグ (SNSシェア・SEO対策) -->
+<meta property="og:title" content="Smart Calculator">
+<meta property="og:description" content="計算 → 記録 → 予測がブラウザで完結するスマート計算機">
+<meta property="og:type" content="website">
+
+<!-- 構造化データ (Google SEO対策) -->
+<script type="application/ld+json" id="jsonLd">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Smart Calculator",
+  "operatingSystem": "All",
+  "applicationCategory": "UtilitiesApplication"
+}
+</script>
 
 <!-- ★ Cloudflare Web Analytics ★ -->
-<script defer src='https://static.cloudflareinsights.com/beacon.min.js'  data-cf-beacon='{"token": "d3bfc23ea7e04a2e84461fc9d614b826"}'></script>
+<script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "d3bfc23ea7e04a2e84461fc9d614b826"}'></script>
+
+<!-- ★ Google AdSense スクリプトタグ（審査通過後に有効化） ★ -->
+<!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script> -->
 
 <link rel="preconnect" href="https://fonts.googleapis.com/">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
@@ -147,6 +167,22 @@
   .predict-box .p-caveat{font-size:11px; color:var(--ink-faint); margin-top:10px; border-top:1px dashed var(--line); padding-top:8px;}
   .predict-none{font-size:12.5px; color:var(--ink-faint); padding:14px 2px;}
 
+  /* ---- 広告スタイル ---- */
+  .ad-slot {
+    margin: 24px 0;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.02);
+    border: 1px dashed var(--line);
+    text-align: center;
+    min-height: 90px;
+  }
+  .ad-label {
+    font-size: 10px;
+    color: var(--ink-faint);
+    margin-bottom: 4px;
+    letter-spacing: 0.1em;
+  }
+
   .footer-note{text-align:center; font-size:11px; color:var(--ink-faint); margin-top:30px; font-family:'JetBrains Mono', monospace;}
 </style>
 </head>
@@ -206,6 +242,22 @@
         <h2 id="titlePredict">簡易予測</h2>
         <div id="predictContainer"><div class="predict-none">予測にはあと 3 回分のデータが必要です。</div></div>
       </div>
+
+      <!-- ★ 広告表示エリア ★ -->
+      <div class="ad-slot">
+        <div class="ad-label">SPONSORED</div>
+        <!-- ★ AdSense等の広告コードをここに挿入します ★ -->
+        <!--
+        <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+             data-ad-slot="XXXXXXXXXX"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+        -->
+      </div>
+
       <div class="hist-head">
         <h2 id="titleHistory">計算履歴</h2>
         <button class="btn btn-ghost" id="clearAllBtn">全履歴削除</button>
@@ -220,7 +272,7 @@
 <script>
 (function(){
 
-  // 言語の自動判定（ブラウザが ja で始まる場合は ja、それ以外は en）
+  // 言語自動判定
   const userLang = (navigator.language || navigator.userLanguage || 'en').toLowerCase();
   let currentLang = userLang.startsWith('ja') ? 'ja' : 'en';
 
@@ -248,15 +300,12 @@
       errZero: '0で割ることはできません',
       errValidNum: '有効な数値を入力してください',
       errAtLeast2: '2つ以上の数値を入力してください',
-      errTotalPos: '全通り数は1以上を指定してください',
-      errNGEr: 'nはr以上の値を入力してください',
-      errGe2: '2以上の整数を入力してください',
-      errTimePos: '時間は0より大きい値を入力してください',
       pNone: '予測にはあと {cnt} 回分のデータが必要です（現在 {cur} 回）。',
       pLabel: '次回の推定値（参考値）',
       pNote: '過去{cnt}回のデータから線形回帰によって推定しています。直近の傾向は「{trend}」です。',
       pCaveat: '※ 未来を当てる機能ではなく、過去の傾向を延長した場合の参考値です。',
-      trendUp: '上昇傾向', trendDown: '下降傾向', trendFlat: 'ほぼ横ばい'
+      trendUp: '上昇傾向', trendDown: '下降傾向', trendFlat: 'ほぼ横ばい',
+      bmiLow: '低体重', bmiNormal: '普通体重', bmiOver: '肥満（1度）', bmiObese: '肥満（2度以上）'
     },
     en: {
       subBrand: 'CALCULATE → RECORD → PREDICT',
@@ -281,15 +330,12 @@
       errZero: 'Cannot divide by zero',
       errValidNum: 'Please enter valid numbers',
       errAtLeast2: 'Please enter 2 or more numbers',
-      errTotalPos: 'Total outcomes must be 1 or more',
-      errNGEr: 'n must be greater than or equal to r',
-      errGe2: 'Please enter an integer of 2 or more',
-      errTimePos: 'Time must be greater than 0',
       pNone: 'Need {cnt} more data point(s) for prediction (currently {cur}).',
       pLabel: 'Estimated Next Value',
       pNote: 'Estimated by linear regression from the last {cnt} data points. Recent trend: "{trend}".',
       pCaveat: '* This is a reference value extending past trends, not a guaranteed prediction.',
-      trendUp: 'Upward', trendDown: 'Downward', trendFlat: 'Flat'
+      trendUp: 'Upward', trendDown: 'Downward', trendFlat: 'Flat',
+      bmiLow: 'Underweight', bmiNormal: 'Normal weight', bmiOver: 'Overweight', bmiObese: 'Obesity'
     }
   };
 
@@ -351,10 +397,10 @@
             const bmi = v.weight / Math.pow(v.height/100, 2);
             const r = round1(bmi);
             let cat;
-            if(bmi<18.5) cat={label: currentLang==='ja'?'低体重':'Underweight', cls:'low'};
-            else if(bmi<25) cat={label: currentLang==='ja'?'普通体重':'Normal', cls:'normal'};
-            else if(bmi<30) cat={label: currentLang==='ja'?'肥満（1度）':'Overweight', cls:'over'};
-            else cat={label: currentLang==='ja'?'肥満（2度以上）':'Obese', cls:'obese'};
+            if(bmi<18.5) cat={label: t('bmiLow'), cls:'low'};
+            else if(bmi<25) cat={label: t('bmiNormal'), cls:'normal'};
+            else if(bmi<30) cat={label: t('bmiOver'), cls:'over'};
+            else cat={label: t('bmiObese'), cls:'obese'};
             return {value:r, display:r.toFixed(1), category:cat};
           },
           inputSummary(v){ return `${v.height}cm / ${v.weight}kg`; }
@@ -450,7 +496,7 @@
           compute(v){
             const nums = v.list.split(',').map(n=>parseFloat(n.trim())).filter(n=>!isNaN(n));
             if(nums.length < 2) return {error: t('errAtLeast2')};
-            const avg = nums.reduce((a,b)=>a+b,0) / nums.length;
+            const avg = nums.reduce((a,b)=>a+Math.pow(b-avg,2),0) / nums.length;
             const variance = nums.reduce((a,b)=>a+Math.pow(b-avg,2),0) / nums.length;
             const sd = Math.sqrt(variance);
             const det = currentLang==='ja' ? `分散: ${round2(variance)} / 平均: ${round2(avg)}` : `Variance: ${round2(variance)} / Mean: ${round2(avg)}`;
@@ -464,9 +510,7 @@
 
   function t(key, params={}){
     let text = (UI_TEXT[currentLang] && UI_TEXT[currentLang][key]) || UI_TEXT['en'][key] || key;
-    Object.keys(params).forEach(p => {
-      text = text.replace(new RegExp(`\\{${p}\\}`, 'g'), params[p]);
-    });
+    Object.keys(params).forEach(p => { text = text.replace(new RegExp(`\\{${p}\\}`, 'g'), params[p]); });
     return text;
   }
 
@@ -480,8 +524,7 @@
   function round2(n){ return Math.round(n*100)/100; }
   function fmtDate(iso){
     const d = new Date(iso);
-    const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
-    return `${y}/${m}/${day}`;
+    return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
   }
 
   const ALL_CALCULATORS = CATEGORIES.flatMap(c => c.calculators);
@@ -500,6 +543,12 @@
   }
 
   const categoryContainer = document.getElementById('categoryContainer');
+
+  /* ---- SEO対策：タイトルとメタタグの動的更新 ---- */
+  function updateSEO(title, description){
+    document.getElementById('docTitle').textContent = title ? `${title} — Smart Calculator` : 'Smart Calculator — 無料Web計算ツール';
+    document.getElementById('docDesc').setAttribute('content', description || '多様な計算（BMI、割合、複利、統計等）をブラウザで簡単計算・自動記録。');
+  }
 
   function updateStaticUI(){
     document.getElementById('subBrand').textContent = t('subBrand');
@@ -522,7 +571,6 @@
 
     CATEGORIES.forEach(cat => {
       const groupDiv = document.createElement('div');
-      
       const label = document.createElement('div');
       label.className = 'stage-label';
       label.textContent = getLangText(cat.categoryName);
@@ -551,6 +599,8 @@
     renderHome();
     if(currentCalc) {
       openCalculator(currentCalc.id);
+    } else {
+      updateSEO();
     }
   });
 
@@ -561,14 +611,21 @@
     currentCalc = null;
     document.getElementById('view-home').style.display = 'block';
     document.getElementById('view-calc').style.display = 'none';
+    updateSEO();
   }
 
   function openCalculator(id){
     currentCalc = ALL_CALCULATORS.find(c=>c.id===id);
     currentHistory = loadJSON(storageKey(id,'history'), []);
+
+    // SEOメタ情報をその計算機専用に更新
+    const cName = getLangText(currentCalc.name);
+    const cDesc = getLangText(currentCalc.desc);
+    updateSEO(cName, `${cName}: ${cDesc}`);
+
     document.getElementById('view-home').style.display = 'none';
     document.getElementById('view-calc').style.display = 'block';
-    document.getElementById('calcTitle').textContent = getLangText(currentCalc.name);
+    document.getElementById('calcTitle').textContent = cName;
 
     document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
     document.querySelector('.tab-btn[data-tab="calc"]').classList.add('active');
