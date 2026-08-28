@@ -22,10 +22,7 @@
 </script>
 
 <!-- ★ Cloudflare Web Analytics ★ -->
-<script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "d3bfc23ea7e04a2e84461fc9d614b826"}'></script>
-
-<!-- ★ Google AdSense スクリプトタグ（審査通過後に有効化） ★ -->
-<!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script> -->
+<script defer src='https://static.cloudflareinsights.com/beacon.min.js'  data-cf-beacon='{"token": "d3bfc23ea7e04a2e84461fc9d614b826"}'></script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com/">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
@@ -69,7 +66,7 @@
   header.top .brand{font-weight:700; font-size:22px; letter-spacing:-0.01em;}
   header.top .brand small{display:block; font-family:'JetBrains Mono', monospace; font-weight:400; font-size:11px; letter-spacing:0.12em; color:var(--ink-faint); text-transform:uppercase; margin-top:2px;}
   .header-actions{display:flex; align-items:center; gap:8px;}
-  header.top .tool-tag{font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--sage-dark); background:var(--sage-tint); border:1px solid var(--line); padding:3px 8px; border-radius:20px; cursor:pointer;}
+  header.top .tool-tag{font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--sage-dark); background:var(--sage-tint); border:1px solid var(--line); padding:3px 8px; border-radius:20px; cursor:pointer; user-select:none;}
 
   /* ---- home grid ---- */
   .stage-label{
@@ -118,17 +115,21 @@
   .btn{appearance:none; border:none; cursor:pointer; font-family:'Space Grotesk', sans-serif; font-weight:600; border-radius:20px; padding:12px 22px; font-size:14px; letter-spacing:0.01em;}
   .btn-primary{width:100%; background:var(--sage-dark); color:#fff;}
   .btn-primary:hover{background:var(--sage);}
-  .btn-ghost{background:transparent; color:var(--rust); border:1px solid var(--line); padding:7px 14px; font-size:12px;}
+  .btn-ghost{background:transparent; color:var(--rust); border:1px solid var(--line); padding:6px 12px; font-size:12px;}
   .btn-ghost:hover{background:var(--rust-tint);}
+  .btn-action{background:var(--paper); border:1px solid var(--line); color:var(--ink-soft); padding:4px 10px; font-size:11px; border-radius:12px; font-family:'JetBrains Mono', monospace;}
+  .btn-action:hover{border-color:var(--sage-dark); color:var(--sage-dark);}
 
   .error{color:var(--rust); font-size:12.5px; margin-top:8px; font-family:'JetBrains Mono', monospace; display:none;}
 
   .readout{margin-top:26px; border-top:1px dashed var(--line); padding-top:22px; display:none;}
   .readout.show{display:block;}
   .readout .label{font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:4px;}
-  .readout .value-row{display:flex; align-items:baseline; gap:10px; border-bottom:3px solid var(--ink); padding-bottom:8px; flex-wrap:wrap;}
+  .readout .value-row{display:flex; align-items:baseline; justify-content:space-between; border-bottom:3px solid var(--ink); padding-bottom:8px; flex-wrap:wrap; gap:8px;}
+  .readout .value-left{display:flex; align-items:baseline; gap:10px;}
   .readout .value{font-family:'JetBrains Mono', monospace; font-size:32px; font-weight:700; letter-spacing:-0.02em;}
   .readout .value-unit{font-family:'JetBrains Mono', monospace; font-size:14px; color:var(--ink-faint);}
+  .readout .action-btns{display:flex; gap:6px;}
   .readout .detail{margin-top:8px; font-size:13px; color:var(--ink-soft); white-space: pre-line;}
   .badge{display:inline-block; margin-top:10px; font-size:12px; font-weight:600; padding:4px 10px; border-radius:20px; font-family:'JetBrains Mono', monospace;}
   .badge.low{background:#e5eef7; color:#2f5f80;}
@@ -141,8 +142,9 @@
   .diff-up{color:var(--rust);}
   .diff-down{color:var(--sage-dark);}
 
-  .hist-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;}
+  .hist-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px;}
   .hist-head h2{font-size:14px; margin:0; letter-spacing:0.03em;}
+  .hist-actions{display:flex; gap:6px;}
   .hist-list{list-style:none; margin:0 0 26px; padding:0; border-top:1px solid var(--line);}
   .hist-list li{display:flex; justify-content:space-between; align-items:center; padding:11px 2px; border-bottom:1px solid var(--line-soft); font-size:13.5px; gap:8px;}
   .hist-list .hd-date{font-family:'JetBrains Mono', monospace; color:var(--ink-soft); font-size:12px;}
@@ -167,7 +169,7 @@
   .predict-box .p-caveat{font-size:11px; color:var(--ink-faint); margin-top:10px; border-top:1px dashed var(--line); padding-top:8px;}
   .predict-none{font-size:12.5px; color:var(--ink-faint); padding:14px 2px;}
 
-  /* ---- 広告スタイル ---- */
+  /* ---- 広告エリア ---- */
   .ad-slot {
     margin: 24px 0;
     padding: 10px;
@@ -193,7 +195,7 @@
   <header class="top">
     <div class="brand">Smart Calculator<small id="subBrand">計算 → 記録 → 予測</small></div>
     <div class="header-actions">
-      <div class="tool-tag" id="langBtn">日本語 / EN</div>
+      <div class="tool-tag" id="langBtn">English</div>
       <div class="tool-tag" id="homeBtn">一覧に戻る</div>
     </div>
   </header>
@@ -221,8 +223,14 @@
       <div class="readout" id="readout">
         <div class="label" id="readoutLabel">結果</div>
         <div class="value-row">
-          <span class="value mono" id="resultValue">--</span>
-          <span class="value-unit" id="resultUnit"></span>
+          <div class="value-left">
+            <span class="value mono" id="resultValue">--</span>
+            <span class="value-unit" id="resultUnit"></span>
+          </div>
+          <div class="action-btns">
+            <button class="btn-action" id="copyBtn">Copy</button>
+            <button class="btn-action" id="shareBtn">Share X</button>
+          </div>
         </div>
         <span class="badge" id="resultBadge" style="display:none;"></span>
         <div class="detail" id="resultDetail" style="display:none;"></div>
@@ -246,21 +254,14 @@
       <!-- ★ 広告表示エリア ★ -->
       <div class="ad-slot">
         <div class="ad-label">SPONSORED</div>
-        <!-- ★ AdSense等の広告コードをここに挿入します ★ -->
-        <!--
-        <ins class="adsbygoogle"
-             style="display:block"
-             data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
-             data-ad-slot="XXXXXXXXXX"
-             data-ad-format="auto"
-             data-full-width-responsive="true"></ins>
-        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-        -->
       </div>
 
       <div class="hist-head">
         <h2 id="titleHistory">計算履歴</h2>
-        <button class="btn btn-ghost" id="clearAllBtn">全履歴削除</button>
+        <div class="hist-actions">
+          <button class="btn btn-ghost" id="exportCsvBtn">CSV出力</button>
+          <button class="btn btn-ghost" id="clearAllBtn">全履歴削除</button>
+        </div>
       </div>
       <ul class="hist-list" id="histList"><li style="border:none;"><div class="empty-note" style="width:100%;">まだ履歴がありません。</div></li></ul>
     </section>
@@ -272,7 +273,6 @@
 <script>
 (function(){
 
-  // 言語自動判定
   const userLang = (navigator.language || navigator.userLanguage || 'en').toLowerCase();
   let currentLang = userLang.startsWith('ja') ? 'ja' : 'en';
 
@@ -290,6 +290,7 @@
       titlePredict: '簡易予測',
       titleHistory: '計算履歴',
       clearAllBtn: '全履歴削除',
+      exportCsvBtn: 'CSV出力',
       emptyNote: '履歴が貯まると表示されます。',
       emptyHist: 'まだ履歴がありません。計算するとここに記録されます。',
       footerNote: 'DATA STORED IN THIS BROWSER ONLY — 端末ごとに保存されます',
@@ -305,7 +306,9 @@
       pNote: '過去{cnt}回のデータから線形回帰によって推定しています。直近の傾向は「{trend}」です。',
       pCaveat: '※ 未来を当てる機能ではなく、過去の傾向を延長した場合の参考値です。',
       trendUp: '上昇傾向', trendDown: '下降傾向', trendFlat: 'ほぼ横ばい',
-      bmiLow: '低体重', bmiNormal: '普通体重', bmiOver: '肥満（1度）', bmiObese: '肥満（2度以上）'
+      copied: 'コピーしました',
+      langToggle: 'English',
+      heightLabel: '身長', weightLabel: '体重'
     },
     en: {
       subBrand: 'CALCULATE → RECORD → PREDICT',
@@ -319,7 +322,8 @@
       titleGraph: 'Trend Graph',
       titlePredict: 'Simple Prediction',
       titleHistory: 'History',
-      clearAllBtn: 'Clear All History',
+      clearAllBtn: 'Clear All',
+      exportCsvBtn: 'Export CSV',
       emptyNote: 'Chart will be displayed as history accumulates.',
       emptyHist: 'No history yet. It will be recorded here when calculated.',
       footerNote: 'DATA STORED IN THIS BROWSER ONLY',
@@ -335,7 +339,9 @@
       pNote: 'Estimated by linear regression from the last {cnt} data points. Recent trend: "{trend}".',
       pCaveat: '* This is a reference value extending past trends, not a guaranteed prediction.',
       trendUp: 'Upward', trendDown: 'Downward', trendFlat: 'Flat',
-      bmiLow: 'Underweight', bmiNormal: 'Normal weight', bmiOver: 'Overweight', bmiObese: 'Obesity'
+      copied: 'Copied!',
+      langToggle: '日本語',
+      heightLabel: 'Height', weightLabel: 'Weight'
     }
   };
 
@@ -397,13 +403,24 @@
             const bmi = v.weight / Math.pow(v.height/100, 2);
             const r = round1(bmi);
             let cat;
-            if(bmi<18.5) cat={label: t('bmiLow'), cls:'low'};
-            else if(bmi<25) cat={label: t('bmiNormal'), cls:'normal'};
-            else if(bmi<30) cat={label: t('bmiOver'), cls:'over'};
-            else cat={label: t('bmiObese'), cls:'obese'};
+            if(currentLang === 'ja'){
+              if(bmi<18.5) cat={label: '低体重', cls:'low'};
+              else if(bmi<25) cat={label: '普通体重', cls:'normal'};
+              else if(bmi<30) cat={label: '肥満（1度）', cls:'over'};
+              else cat={label: '肥満（2度以上）', cls:'obese'};
+            } else {
+              if(bmi<18.5) cat={label: 'Underweight', cls:'low'};
+              else if(bmi<25) cat={label: 'Normal weight', cls:'normal'};
+              else if(bmi<30) cat={label: 'Overweight', cls:'over'};
+              else cat={label: 'Obesity', cls:'obese'};
+            }
             return {value:r, display:r.toFixed(1), category:cat};
           },
-          inputSummary(v){ return `${v.height}cm / ${v.weight}kg`; }
+          inputSummary(v){
+            const hL = t('heightLabel');
+            const wL = t('weightLabel');
+            return `${hL} ${v.height}cm · ${wL} ${v.weight}kg`;
+          }
         }
       ]
     },
@@ -496,7 +513,7 @@
           compute(v){
             const nums = v.list.split(',').map(n=>parseFloat(n.trim())).filter(n=>!isNaN(n));
             if(nums.length < 2) return {error: t('errAtLeast2')};
-            const avg = nums.reduce((a,b)=>a+Math.pow(b-avg,2),0) / nums.length;
+            const avg = nums.reduce((a,b)=>a+b,0) / nums.length;
             const variance = nums.reduce((a,b)=>a+Math.pow(b-avg,2),0) / nums.length;
             const sd = Math.sqrt(variance);
             const det = currentLang==='ja' ? `分散: ${round2(variance)} / 平均: ${round2(avg)}` : `Variance: ${round2(variance)} / Mean: ${round2(avg)}`;
@@ -544,7 +561,6 @@
 
   const categoryContainer = document.getElementById('categoryContainer');
 
-  /* ---- SEO対策：タイトルとメタタグの動的更新 ---- */
   function updateSEO(title, description){
     document.getElementById('docTitle').textContent = title ? `${title} — Smart Calculator` : 'Smart Calculator — 無料Web計算ツール';
     document.getElementById('docDesc').setAttribute('content', description || '多様な計算（BMI、割合、複利、統計等）をブラウザで簡単計算・自動記録。');
@@ -562,7 +578,9 @@
     document.getElementById('titlePredict').textContent = t('titlePredict');
     document.getElementById('titleHistory').textContent = t('titleHistory');
     document.getElementById('clearAllBtn').textContent = t('clearAllBtn');
+    document.getElementById('exportCsvBtn').textContent = t('exportCsvBtn');
     document.getElementById('footerNote').textContent = t('footerNote');
+    document.getElementById('langBtn').textContent = t('langToggle');
   }
 
   function renderHome(){
@@ -618,7 +636,6 @@
     currentCalc = ALL_CALCULATORS.find(c=>c.id===id);
     currentHistory = loadJSON(storageKey(id,'history'), []);
 
-    // SEOメタ情報をその計算機専用に更新
     const cName = getLangText(currentCalc.name);
     const cDesc = getLangText(currentCalc.desc);
     updateSEO(cName, `${cName}: ${cDesc}`);
@@ -684,6 +701,13 @@
       if(last[f.id] !== undefined){
         document.getElementById('f-'+f.id).value = last[f.id];
       }
+    });
+
+    // Enterキーで計算実行できるようにリスナー追加
+    container.querySelectorAll('input').forEach(inp => {
+      inp.addEventListener('keypress', (e) => {
+        if(e.key === 'Enter') document.getElementById('calcBtn').click();
+      });
     });
   }
 
@@ -755,7 +779,6 @@
     const prevBox = document.getElementById('prevBox');
     if(prevEntry){
       prevBox.style.display = 'flex';
-      document.getElementById('prevDate').textContent = fmtDate(prevEntry.date);
       document.getElementById('prevLabel').innerHTML = `${t('prevLabelPrefix')}<span class="mono">${fmtDate(prevEntry.date)}</span>）`;
       if(currentCalc.trend && result.value!==null && prevEntry.result.value!==null){
         const diff = result.value - prevEntry.result.value;
@@ -770,6 +793,27 @@
     }
     document.getElementById('readout').classList.add('show');
   }
+
+  // 結果のコピー機能
+  document.getElementById('copyBtn').addEventListener('click', ()=>{
+    const val = document.getElementById('resultValue').textContent;
+    const unit = document.getElementById('resultUnit').textContent;
+    navigator.clipboard.writeText(`${val} ${unit}`.trim()).then(()=>{
+      const orig = document.getElementById('copyBtn').textContent;
+      document.getElementById('copyBtn').textContent = t('copied');
+      setTimeout(()=> document.getElementById('copyBtn').textContent = orig, 1500);
+    });
+  });
+
+  // SNS(X) シェア機能
+  document.getElementById('shareBtn').addEventListener('click', ()=>{
+    const val = document.getElementById('resultValue').textContent;
+    const unit = document.getElementById('resultUnit').textContent;
+    const cName = getLangText(currentCalc.name);
+    const text = encodeURIComponent(`【${cName}】計算結果: ${val} ${unit}\n#SmartCalculator`);
+    const url = encodeURIComponent(window.location.href);
+    window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, '_blank');
+  });
 
   function showLastResultIfAny(){
     if(currentHistory.length===0) return;
@@ -808,6 +852,20 @@
       });
     });
   }
+
+  // CSVダウンロード機能
+  document.getElementById('exportCsvBtn').addEventListener('click', ()=>{
+    if(currentHistory.length === 0) return;
+    let csv = 'Date,Input,Result\n';
+    currentHistory.forEach(h => {
+      csv += `"${fmtDate(h.date)}","${h.inputSummary}","${h.result.display}"\n`;
+    });
+    const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `${currentCalc.id}_history.csv`;
+    link.click();
+  });
 
   document.getElementById('clearAllBtn').addEventListener('click', ()=>{
     if(currentHistory.length===0) return;
@@ -897,7 +955,6 @@
     </div>`;
   }
 
-  // 初期化実行
   updateStaticUI();
   renderHome();
   showHome();
